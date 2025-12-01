@@ -1,0 +1,26 @@
+volumes:
+  postgres_data:
+
+services:
+  db:
+    image: postgres:16
+    container_name: db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: ./
+    container_name: app
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
