@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -14,16 +14,38 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(cuid())
-  email                        String   @unique
-  password                     String
-  userName                     String
-  role                         Role     @default(USER)
+  id       String    @id @default(cuid())
+  email    String    @unique
+  password String
+  username String    @unique
+  role     Role      @default(USER)
+  sessions Session[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Session {
+  id        String        @id @default(cuid())
+  userId    String
+  status    SessionStatus
+  ip        String?
+  ua        String?
+  sessionId String
+  createdAt DateTime      @default(now())
+  expiresAt DateTime
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Отдельная модель баланса 
 
 enum Role {
-  USER 
+  USER
   ADMIN
+}
+
+enum SessionStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED 
 }
