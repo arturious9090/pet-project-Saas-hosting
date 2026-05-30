@@ -37,6 +37,35 @@ model Session {
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model Project {
+  id      String        @id @default(cuid())
+  name    String
+  status  ProjectStatus
+  ownerId String
+  owner   User          @relation(fields: [ownerId], references: [id])
+  files   File[]
+}
+
+model File {
+  id         String        @id @default(cuid())
+  name       String
+  storedName String        @unique
+  ownerId    String
+  owner      User          @relation(fields: [ownerId], references: [id])
+  projectId  String
+  project    Project       @relation(fields: [projectId], references: [id])
+  mimeType   MimeType
+  path       String       // path to a file in web 
+  key        String       // Key to a file in S3 storage 
+  size       Int
+  hashSum    String
+  extension  FileExtension
+  metaData   Json?
+
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
 // Отдельная модель баланса 
 
 enum Role {
@@ -48,4 +77,132 @@ enum SessionStatus {
   ACTIVE
   EXPIRED
   REVOKED 
+enum ProjectStatus {
+  ACTIVE
+  DRAFT
+  DELETED
+  ARCHIVED
+}
+
+enum MimeType {
+  // Документы
+  APPLICATION_PDF
+  APPLICATION_JSON
+  APPLICATION_XML
+  APPLICATION_ZIP
+  APPLICATION_OCTET_STREAM
+  TEXT_PLAIN
+  TEXT_HTML
+  TEXT_CSS
+  TEXT_JAVASCRIPT
+
+  // Изображения
+  IMAGE_JPEG
+  IMAGE_PNG
+  IMAGE_GIF
+  IMAGE_WEBP
+  IMAGE_SVG_XML
+  IMAGE_BMP
+  IMAGE_TIFF
+
+  // Видео
+  VIDEO_MP4
+  VIDEO_WEBM
+  VIDEO_OGG
+  VIDEO_QUICKTIME
+  VIDEO_X_MSVIDEO
+
+  // Аудио
+  AUDIO_MPEG
+  AUDIO_WAV
+  AUDIO_OGG
+  AUDIO_WEBM
+  AUDIO_MP3
+
+  // Другие
+  MULTIPART_FORM_DATA
+}
+
+enum FileExtension {
+  // Изображения
+  JPG
+  JPEG
+  PNG
+  GIF
+  SVG
+  WEBP
+  TIFF
+  BMP
+  HEIC
+
+  // Документы и текст
+  PDF
+  TXT
+  DOC
+  DOCX
+  RTF
+  ODT
+
+  // Таблицы
+  XLS
+  XLSX
+  CSV
+  ODS
+
+  // Презентации
+  PPT
+  PPTX
+  ODP
+
+  // Архивы
+  ZIP
+  RAR
+  TAR
+  GZ
+
+  // Аудио
+  MP3
+  WAV
+  FLAC
+  AAC
+  OGG
+
+  // Видео
+  MP4
+  AVI
+  MKV
+  MOV
+  WMV
+  FLV
+
+  // Исходный код и данные
+  JS
+  TS
+  JSON
+  XML
+  HTML
+  CSS
+  MD
+  YAML
+  YML
+  SQL
+  SH
+  PY
+  RB
+  PHP
+  JAVA
+  C
+  CPP
+  CS
+  GO
+  RS
+
+  // Исполняемые и системные файлы
+  EXE
+  BAT
+  BIN
+  DLL
+  ISO
+  DMG
+  APK
 }
