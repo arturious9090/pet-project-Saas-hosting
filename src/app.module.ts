@@ -5,6 +5,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { ProjectsModule } from './projects/projects.module';
+import { FilesModule } from './files/files.module';
 
 
 @Module({
@@ -15,8 +16,9 @@ import { ProjectsModule } from './projects/projects.module';
     }),
     PrismaModule,
     AuthModule,
-    SessionsModule
+    SessionsModule,
     ProjectsModule,
+    FilesModule
   ],
   controllers: [],
   providers: [],
