@@ -1,8 +1,7 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { randomUUID } from 'node:crypto'
 import { Session, SessionStatus } from '@prisma/client';
-import { ClassTransformer, instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class SessionsService {
@@ -26,7 +25,9 @@ export class SessionsService {
 
     async getSession(sessionId: string): Promise<Session> {
         try {
-            return await this.prisma.session.findUniqueOrThrow({ where: { id: sessionId } })
+            return await this.prisma.session.findUniqueOrThrow({
+                where: { sessionId }
+            })
         } catch (err) {
             if (err.code === 'P2025') throw new UnauthorizedException('Session not found');
             throw err;
@@ -50,6 +51,11 @@ export class SessionsService {
         if (new Date() < new Date(session.expiresAt) && session.status === SessionStatus.ACTIVE) {
             return session
         }
-        return null 
+        return undefined
+    }
+
+    async getLastActiveSession(userId: string): Promise<Session | undefined> {
+        const session = await this.prisma.session.findFirst({ where: { userId, status: SessionStatus.ACTIVE } })
+        return session ? session : undefined
     }
 }
