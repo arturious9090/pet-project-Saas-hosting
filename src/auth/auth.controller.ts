@@ -16,7 +16,8 @@ export class AuthController {
         @Res({ passthrough: true }) res: Response
     ) {
         const sessionId = await this.authService.login(req.user, { ip: req.ip, ua: req.headers['user-agent'] })
-        return res.cookie('session_id', sessionId, { httpOnly: true, maxAge: 5 * 24 * 60 * 60 * 1000 })
+        res.cookie('session_id', sessionId, { httpOnly: true, maxAge: 5 * 24 * 60 * 60 * 1000 })
+        return 'Ok'
     }
 
     @Post('sign-up')

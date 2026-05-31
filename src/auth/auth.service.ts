@@ -12,8 +12,8 @@ export class AuthService {
         private readonly sessionsService: SessionsService
     ) { }
 
-    async validateUser(username: string, password: string): Promise<any> {
-        const user = await this.usersService.findByName(username);
+    async validateUser(email: string, password: string): Promise<any> {
+        const user = await this.usersService.findByEmail(email);
         if (user && await bcrypt.compare(password, user.password)) {
             const { password, ...result } = user;
             return result;
@@ -27,14 +27,18 @@ export class AuthService {
         const { password, ...result } = await this.usersService.create({
             email: dto.email,
             password: await bcrypt.hash(dto.password, 10),
-            username
+            userName: username
         })
         return result
     }
 
     async login(user: Omit<User, "password">, metaData?: { ip?: string, ua?: string }) {
-        const { sessionId, ...session } = await this.sessionsService.createSession(user.id, metaData)
-        return { sessionId: sessionId }
+            let session = await this.sessionsService.getLastActiveSession(user.id)
+            if (!session) {
+                session = await this.sessionsService.createSession(user.id, metaData)
+            }
+            return session.sessionId
+
     }
 
 }
