@@ -14,15 +14,18 @@ datasource db {
 }
 
 model User {
-  id       String    @id @default(cuid())
-  email    String    @unique
+  id       String     @id @default(cuid())
+  email    String     @unique
   password String
-  username String    @unique
-  role     Role      @default(USER)
+  status   UserStatus @default(PANDING)
+  role     UserRole   @default(USER)
   sessions Session[]
+  userName String     @unique
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  files     File[]
+  projects  Project[]
 }
 
 model Session {
@@ -31,7 +34,7 @@ model Session {
   status    SessionStatus
   ip        String?
   ua        String?
-  sessionId String
+  sessionId String        @unique
   createdAt DateTime      @default(now())
   expiresAt DateTime
   user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -68,7 +71,7 @@ model File {
 
 // Отдельная модель баланса 
 
-enum Role {
+enum UserRole {
   USER
   ADMIN
 }
@@ -76,7 +79,15 @@ enum Role {
 enum SessionStatus {
   ACTIVE
   EXPIRED
-  REVOKED 
+  REVOKED
+}
+
+enum UserStatus {
+  PANDING
+  VERIFIED
+  BANNED
+}
+
 enum ProjectStatus {
   ACTIVE
   DRAFT
