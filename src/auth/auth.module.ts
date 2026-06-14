@@ -5,7 +5,6 @@ import { UserModule } from 'src/user/user.module';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './local.strategy';
 import { SessionsModule } from 'src/sessions/sessions.module';
-import { SessionGuard } from './session.guard';
 
 @Module({
   imports: [

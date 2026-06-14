@@ -12,10 +12,11 @@ export class AuthController {
     @UseGuards(LocalAuthGuard)
     @Post('sign-in')
     async login(
-        @Req() req: CurrentUserRequest,
+        @Req() req: Request,
+        @Body() dto: RegisterDto,
         @Res({ passthrough: true }) res: Response
     ) {
-        const sessionId = await this.authService.login(req.user, { ip: req.ip, ua: req.headers['user-agent'] })
+        const sessionId = await this.authService.login(dto, { ua: req.headers['user-agent'] })
         res.cookie('session_id', sessionId, { httpOnly: true, maxAge: 5 * 24 * 60 * 60 * 1000 })
         return 'Ok'
     }

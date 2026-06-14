@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { RegisterDto } from './dto/register.dto';
 import { User } from '@prisma/client';
@@ -32,12 +32,17 @@ export class AuthService {
         return result
     }
 
-    async login(user: Omit<User, "password">, metaData?: { ip?: string, ua?: string }) {
-            let session = await this.sessionsService.getLastActiveSession(user.id)
-            if (!session) {
-                session = await this.sessionsService.createSession(user.id, metaData)
-            }
-            return session.sessionId
+    async login(dto: RegisterDto, metaData?: { ip?: string, ua?: string }) {
+        const user = await this.usersService.findByEmail(dto.email)
+
+        const isMatch = await bcrypt.compare(dto.password, user.password)
+        if (!isMatch) throw new UnauthorizedException();
+
+        let session = await this.sessionsService.getLastActiveSession(user.id)
+        if (!session) {
+            session = await this.sessionsService.createSession(user.id, metaData)
+        }
+        return session.sessionId
 
     }
 
