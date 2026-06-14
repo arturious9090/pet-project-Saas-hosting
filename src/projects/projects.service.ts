@@ -3,10 +3,15 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { Prisma, Project, ProjectStatus } from '@prisma/client';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { InitFileUploadDto } from './dto/init-file-upload.dto';
+import { FilesService } from 'src/files/files.service';
 
 @Injectable()
 export class ProjectsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly filesService: FilesService
+    ) { }
 
     async create(dto: CreateProjectDto, userId: string) {
         try {
@@ -50,12 +55,32 @@ export class ProjectsService {
     }
 
     async find(projectId: string): Promise<Project> {
-        const project = await this.prisma.project.findUnique({ where: { id: projectId } })
+        const project = await this.prisma.project.findUnique({
+            where: { id: projectId },
+            include: { files: true }
+        })
         if (!project) throw new NotFoundException()
         return project
     }
 
     async findMany(userId: string) {
         return await this.prisma.project.findMany({ where: { ownerId: userId } })
+    }
+
+    async createFileUploadRequest(userId: string, projectId: string, dto: InitFileUploadDto) {
+
+        const file = await this.filesService.createFile(projectId, userId, dto)
+        await this.prisma.project.update({
+            where: {
+                id: projectId,
+                ownerId: userId
+            },
+            data: {
+                files: {
+                    connect: { id: file.id }
+                }
+            }
+        })
+        
     }
 }

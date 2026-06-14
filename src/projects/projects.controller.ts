@@ -4,6 +4,7 @@ import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { CurrentUserRequest } from 'src/common/requests/current-user-request.interface';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { InitFileUploadDto } from './dto/init-file-upload.dto';
 @UseGuards(SessionGuard)
 @Controller('projects')
 export class ProjectsController {
@@ -43,6 +44,15 @@ export class ProjectsController {
         const project = await this.projectsService.find(projectId)
         if (project?.ownerId != req.user.id) throw new NotFoundException();
         return await this.projectsService.update(dto, project.id)
+    }
+
+    @Post(':project-id/files/init')
+    async initFileUpload(
+        @Param() projectId: string,
+        @Req() req: CurrentUserRequest,
+        @Body() dto: InitFileUploadDto
+    ) {
+        return await this.projectsService.createFileUploadRequest(req.user.id, projectId, dto)
     }
 
 }

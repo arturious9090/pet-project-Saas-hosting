@@ -24,7 +24,6 @@ model User {
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  files     File[]
   projects  Project[]
 }
 
@@ -50,23 +49,23 @@ model Project {
 }
 
 model File {
-  id         String        @id @default(cuid())
+  id         String         @id @default(cuid())
   name       String
-  storedName String        @unique
+  storedName String?        @unique
   ownerId    String
-  owner      User          @relation(fields: [ownerId], references: [id])
   projectId  String
-  project    Project       @relation(fields: [projectId], references: [id])
-  mimeType   MimeType
-  path       String       // path to a file in web 
-  key        String       // Key to a file in S3 storage 
-  size       Int
-  hashSum    String
-  extension  FileExtension
+  project    Project        @relation(fields: [projectId], references: [id])
+  mimeType   MimeType?
+  path       String // path to a file in web 
+  key        String // Key to a file in S3 storage 
+  size       Int?
+  hashSum    String?
+  extension  FileExtension?
+  status     FileStatus
   metaData   Json?
 
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Отдельная модель баланса 
@@ -93,6 +92,15 @@ enum ProjectStatus {
   DRAFT
   DELETED
   ARCHIVED
+}
+
+enum FileStatus {
+  PENDING_UPLOAD
+  UPLOADED
+  PROCESSING
+  READY
+  FAILED
+  REJECTED
 }
 
 enum MimeType {
