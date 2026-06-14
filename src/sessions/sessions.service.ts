@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { randomUUID } from 'node:crypto'
 import { Session, SessionStatus } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class SessionsService {
@@ -29,7 +30,9 @@ export class SessionsService {
                 where: { sessionId }
             })
         } catch (err) {
-            if (err.code === 'P2025') throw new UnauthorizedException('Session not found');
+            if (err instanceof PrismaClientKnownRequestError && err.code === 'P2025') {
+                throw new UnauthorizedException('Session not found');
+            }
             throw err;
         }
     }
@@ -41,7 +44,9 @@ export class SessionsService {
                 data: { status: SessionStatus.REVOKED }
             })
         } catch (err) {
-            if (err.code === 'P2025') throw new UnauthorizedException('Session not found');
+            if (err instanceof PrismaClientKnownRequestError && err.code === 'P2025') {
+                throw new UnauthorizedException('Session not found');
+            }
             throw err;
         }
     }

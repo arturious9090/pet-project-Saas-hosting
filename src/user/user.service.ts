@@ -1,5 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, Session, SessionStatus, User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -13,7 +14,7 @@ export class UserService {
         try {
             return await this.prisma.user.create({ data })
         } catch (err) {
-            if (err.code === 'P2002') throw new ConflictException('A user with that name already exists');
+            if (err instanceof PrismaClientKnownRequestError && err.code === 'P2002') throw new ConflictException('A user with that name already exists');
             throw err
         }
     }
@@ -27,7 +28,7 @@ export class UserService {
                 data
             })
         } catch (err) {
-            if (err.code === 'P2025') {
+            if (err instanceof PrismaClientKnownRequestError && err.code === 'P2025') {
                 throw new NotFoundException('User not found');
             }
             throw err;
@@ -37,7 +38,7 @@ export class UserService {
         try {
             return await this.prisma.user.delete({ where: { id } })
         } catch (err) {
-            if (err.code === 'P2025') throw new NotFoundException('User not found');
+            if (err instanceof PrismaClientKnownRequestError && err.code === 'P2025') throw new NotFoundException('User not found');
             throw err;
         }
     }
