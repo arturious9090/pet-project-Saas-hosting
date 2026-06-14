@@ -10,8 +10,6 @@ export class SessionGuard implements CanActivate {
         private readonly userService: UserService
     ) {}
 
-    private context: ExecutionContext
-
     async canActivate(context: ExecutionContext):Promise<boolean> {
         const request = context.switchToHttp().getRequest()
         const sessionId = this.extractSesionIdFromCookie(request)
