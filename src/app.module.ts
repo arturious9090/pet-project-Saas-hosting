@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { ProjectsModule } from './projects/projects.module';
 import { FilesModule } from './files/files.module';
+import { StorageModule } from './storage/storage.module';
 import appConfig from './configs/app.config';
 import s3Config from './configs/s3.config';
 import dbConfig from './configs/db.config';
@@ -23,6 +24,7 @@ import dbConfig from './configs/db.config';
     SessionsModule,
     ProjectsModule,
     FilesModule
+    StorageModule,
   ],
   controllers: [],
   providers: [],
