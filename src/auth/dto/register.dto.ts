@@ -3,11 +3,11 @@ import { IsEmail, IsOptional, IsString, IsStrongPassword, Length } from "class-v
 export class RegisterDto {
     @IsString()
     @IsEmail()
-    email: string;
+    email!: string;
 
     @IsString()
     @IsStrongPassword()
-    password: string;
+    password!: string;
     
     @IsOptional()
     @IsString()
