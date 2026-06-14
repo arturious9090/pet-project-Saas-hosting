@@ -6,6 +6,9 @@ import { AuthModule } from './auth/auth.module';
 import { SessionsModule } from './sessions/sessions.module';
 import { ProjectsModule } from './projects/projects.module';
 import { FilesModule } from './files/files.module';
+import appConfig from './configs/app.config';
+import s3Config from './configs/s3.config';
+import dbConfig from './configs/db.config';
 
 
 @Module({
@@ -13,6 +16,7 @@ import { FilesModule } from './files/files.module';
     UserModule,
     ConfigModule.forRoot({
       isGlobal: true
+      load: [appConfig, s3Config, dbConfig],
     }),
     PrismaModule,
     AuthModule,
