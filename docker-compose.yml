@@ -1,5 +1,9 @@
 volumes:
   postgres_data:
+  minio_data: 
+  etcd-data:
+  traefik-acme:
+  certs: 
 
 services:
   db:
@@ -24,3 +28,85 @@ services:
       - "3000:3000"
     depends_on:
       - db
+
+  minio: 
+    image: minio/minio
+    container_name: minio
+    restart: always
+    command: server /data --console-address ":9001"
+    ports: 
+     - "9000:9000"
+     - "9001:9001"
+    environment: 
+     - MINIO_ROOT_USER=${AWS_ACCESS_KEY_ID}
+     - MINIO_ROOT_PASSWORD=${AWS_SECRET_ACCESS_KEY}
+     - MINIO_SITE_REGION=${AWS_REGION}
+    volumes:
+     - minio_data:/data
+
+  createbuckets:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    restart: on-failure
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      /usr/bin/mc alias set dockerminio http://minio:9000 ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY};
+      /usr/bin/mc mb dockerminio/${AWS_BUCKET}/;
+      /usr/bin/mc anonymous set download dockerminio/${AWS_BUCKET};
+      exit 0;
+      "
+
+  etcd:
+    container_name: etcd
+    image: bitnamilegacy/etcd:3.5
+    environment:
+      # В DEV можно без аутентификации. В проде включите TLS/пользователей.
+      - ALLOW_NONE_AUTHENTICATION=${ALLOW_NONE_AUTHENTICATION}
+      - ETCD_ADVERTISE_CLIENT_URLS=${ETCD_ADVERTISE_CLIENT_URLS}
+      - ETCD_LISTEN_CLIENT_URLS=${ETCD_LISTEN_CLIENT_URLS}
+    ports:
+      - "2379:2379"
+    volumes:
+      - etcd-data:/bitnami/etcd
+
+  traefik:
+    image: traefik:v2.11
+    command:
+      # entrypoints
+      - --api=true
+      - --api.insecure=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+
+      # provider etcd
+      - --providers.etcd=true
+      - --providers.etcd.endpoints=etcd:2379
+      - --log.level=DEBUG
+      - --accesslog
+    labels:
+      - traefik.enable=true
+      # traefik panel 
+      - traefik.http.routers.traefik.rule=Host(`${TRAEFIC_PANEL_DOMAIN}`)
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.entrypoints=web
+      # app proxy 
+      - "traefik.http.routers.api.rule=Host(`${DOMAIN_NAME}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.services.api.loadbalancer.server.port=3000"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - traefik-acme:/acme
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - certs:/certs:ro 
+    depends_on:
+      - etcd
+

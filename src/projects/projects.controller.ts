@@ -25,9 +25,9 @@ export class ProjectsController {
         return await this.projectsService.findMany(req.user.id)
     }
 
-    @Get(':project-id')
+    @Get(':projectId')
     async find(
-        @Param() projectId: string,
+        @Param('projectId') projectId: string,
         @Req() req: CurrentUserRequest
     ) {
         const project = await this.projectsService.find(projectId)
@@ -35,9 +35,9 @@ export class ProjectsController {
         return project
     }
 
-    @Post(':project-id')
+    @Post(':projectId')
     async update(
-        @Param() projectId: string,
+        @Param('projectId') projectId: string,
         @Req() req: CurrentUserRequest,
         @Body() dto: UpdateProjectDto
     ) {
@@ -46,13 +46,22 @@ export class ProjectsController {
         return await this.projectsService.update(dto, project.id)
     }
 
-    @Post(':project-id/files/init')
+    @Post(':projectId/files/init')
     async initFileUpload(
-        @Param() projectId: string,
+        @Param('projectId') projectId: string,
         @Req() req: CurrentUserRequest,
         @Body() dto: InitFileUploadDto
     ) {
         return await this.projectsService.createFileUploadRequest(req.user.id, projectId, dto)
+    }
+
+    @Post(':projectId/files/:fileId/complete')
+    async completeFileUpload(
+        @Param('projectId') projectId: string,
+        @Param('fileId') fileId: string,
+        @Req() req: CurrentUserRequest
+    ) {
+        return await this.projectsService.completeFileUpload(fileId, req.user.id, projectId)
     }
 
 }

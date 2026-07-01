@@ -11,14 +11,15 @@ import { ScheduleModule } from '@nestjs/schedule';
 import appConfig from './configs/app.config';
 import s3Config from './configs/s3.config';
 import dbConfig from './configs/db.config';
+import etcdConfig from './configs/etcd.config';
 
 
 @Module({
   imports: [
     UserModule,
     ConfigModule.forRoot({
-      isGlobal: true
-      load: [appConfig, s3Config, dbConfig],
+      isGlobal: true,
+      load: [appConfig, s3Config, dbConfig, etcdConfig],
     }),
     PrismaModule,
     AuthModule,
