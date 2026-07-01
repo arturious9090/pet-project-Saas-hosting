@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { randomUUID } from 'node:crypto'
 import { Session, SessionStatus } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class SessionsService {
@@ -60,7 +61,15 @@ export class SessionsService {
     }
 
     async getLastActiveSession(userId: string): Promise<Session | undefined> {
-        const session = await this.prisma.session.findFirst({ where: { userId, status: SessionStatus.ACTIVE } })
+        const session = await this.prisma.session.findFirst({ where: { userId, status: SessionStatus.ACTIVE} })
         return session ? session : undefined
+    }
+
+    @Cron('5 * * * *')
+    async checkSessions() {
+        await this.prisma.session.updateMany({
+            where: { expiresAt: { lt: new Date } },
+            data: { status: SessionStatus.EXPIRED }
+        })
     }
 }
