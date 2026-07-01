@@ -1,9 +1,10 @@
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { GetObjectAttributesCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MimeType } from '@prisma/client';
+import { FileExtension, MimeType } from '@prisma/client';
 import { InjectS3, S3 } from 'nestjs-s3';
+import { MimeTypeValue } from 'src/common/types/mime-types-value';
 
 @Injectable()
 export class StorageService {
@@ -13,7 +14,7 @@ export class StorageService {
     ) { }
 
 
-    async createUploadUrl(key: string, contentType: MimeType, size: number) {
+    async createUploadUrl(key: string, contentType: MimeTypeValue) {
         const command = new PutObjectCommand({
             Bucket: this.config.get<string>('s3.bucket'),
             Key: key,
@@ -41,8 +42,22 @@ export class StorageService {
         };
     }
 
-    createKey(userId: string, projectId: string, fileId: string) {
-        return `${userId}/projects/${projectId}/objects/${fileId}`
+    async getFileHead(key: string){
+        const command = new HeadObjectCommand({
+            Bucket: this.config.get<string>('s3.bucket'),
+            Key: key
+        })
+        try {
+            const head = await this.s3.send(command)
+            console.log(head)
+            return head
+        } catch (err) {
+            throw new NotFoundException(' File not found ')
+        }
+    }
+
+    createKey(userId: string, projectId: string, fileId: string, fileExtesion: string) {
+        return `users/${userId}/projects/${projectId}/objects/${fileId}.${fileExtesion}`
     }
 
 }

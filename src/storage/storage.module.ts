@@ -1,18 +1,21 @@
 import { Module } from '@nestjs/common';
 import { StorageService } from './storage.service';
 import { S3Module } from 'nestjs-s3';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
     S3Module.forRootAsync({
-      useFactory: () => ({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
         config: {
           credentials: {
-            accessKeyId: 'minio',     // todo do wariables from env file 
-            secretAccessKey: 'password',
+            accessKeyId: config.getOrThrow<string>('s3.keyId'),    
+            secretAccessKey: config.getOrThrow<string>('s3.secretKey'),
           },
-          // region: 'us-east-1',
-          endpoint: 'http://localhost:9000',
+          region: config.get<string>('s3.region'),
+          endpoint: config.get<string>('s3.endpoint'),
           forcePathStyle: true,
           signatureVersion: 'v4',
         },
@@ -23,3 +26,4 @@ import { S3Module } from 'nestjs-s3';
   exports: [StorageService],
 })
 export class StorageModule {}
+
