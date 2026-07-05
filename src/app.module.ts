@@ -25,7 +25,7 @@ import etcdConfig from './configs/etcd.config';
     AuthModule,
     SessionsModule,
     ProjectsModule,
-    FilesModule
+    FilesModule,
     StorageModule,
     ScheduleModule.forRoot()
   ],
@@ -33,3 +33,4 @@ import etcdConfig from './configs/etcd.config';
   providers: [],
 })
 export class AppModule {}
+

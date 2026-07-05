@@ -5,10 +5,11 @@ import { FilesModule } from 'src/files/files.module';
 import { SessionsModule } from 'src/sessions/sessions.module';
 import { UserModule } from 'src/user/user.module';
 import { StorageModule } from 'src/storage/storage.module';
+import { TraefikModule } from 'src/traefik/traefik.module';
 
 @Module({
   controllers: [ProjectsController],
   providers: [ProjectsService],
-  imports: [FilesModule, SessionsModule, UserModule, StorageModule]
+  imports: [FilesModule, SessionsModule, UserModule, StorageModule, TraefikModule]
 })
 export class ProjectsModule {}

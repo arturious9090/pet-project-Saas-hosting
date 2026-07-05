@@ -6,6 +6,7 @@ import { StorageService } from 'src/storage/storage.service';
 import { randomUUID } from 'node:crypto';
 import { MIME_TYPE_BY_VALUE } from 'src/common/types/mime-types-by-value';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import * as path from 'path';
 
 @Injectable()
 export class FilesService {
@@ -16,7 +17,7 @@ export class FilesService {
 
     async createFile(projectId: string, userId: string, dto: CraeteFileDto) {
         const storedName = randomUUID()
-        const fileExtesion = dto.mimeType.split('/')[1] // Сделать нормальное определение расширения файла. 
+        const fileExtesion = path.extname(dto.fileName).slice(1) // Сделать нормальное определение расширения файла. 
         const key = this.storage.createKey(userId, projectId, storedName, fileExtesion)
 
         const file = await this.prisma.file.create({
