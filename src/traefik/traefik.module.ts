@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
       })
     }),
   ],
-  providers: [TraefikService]
+  providers: [TraefikService],
+  exports: [TraefikService]
 })
 export class TraefikModule { }

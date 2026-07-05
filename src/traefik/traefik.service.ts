@@ -21,22 +21,22 @@ export class TraefikService {
      * @param projectId - ID проєкту
      */
     async addProject(domain: string, projectId: string) {
-        const bucket = this.config.get<string>('s3.bucket');
-
+        const indexPageMidelware = await this.etcd.get('traefik/http/middlewares/rewrite-root-to-index/').exists()
+        if (!indexPageMidelware) {
+            await this.etcd.put('traefik/http/middlewares/rewrite-root-to-index/replacePathRegex/regex').value('^/$')
+            await this.etcd.put('traefik/http/middlewares/rewrite-root-to-index/replacePathRegex/replacement').value('/index.html')
+        }
         // Роутер: ловить запити на домен + опціонально PathPrefix
         await this.etcd.put(`traefik/http/routers/${projectId}/rule`).value(`Host(\`${domain}\`)`);
         await this.etcd.put(`traefik/http/routers/${projectId}/entryPoints/0`).value('web');
         await this.etcd.put(`traefik/http/routers/${projectId}/service`).value(`${projectId}-service`);
-        await this.etcd.put(`traefik/http/routers/${projectId}/middlewares/0`).value(`${projectId}-s3-prefix`);
 
         // Сервіс: проксі на S3 (MinIO)
         // Використовуємо reverse proxy на внутрішній MinIO
         await this.etcd.put(`traefik/http/services/${projectId}-service/loadBalancer/servers/0/url`).value(`http://minio:9000`);
 
-        // Middleware: додаємо префікс бакету до шляху
-        // Наприклад, запит на /index.html перетворюється на /${bucket}/users/.../index.html
-        // Але краще використати AddPrefix + ReplacePathRegex для гнучкості
-        await this.etcd.put(`traefik/http/middlewares/${projectId}-s3-prefix/addPrefix/prefix`).value(`/${bucket}`);
+        await this.etcd.put(`traefik/http/routers/${projectId}/middlewares/0`).value('rewrite-root-to-index')
+
     }
 
     /**
@@ -49,15 +49,16 @@ export class TraefikService {
      * @param filePath - зовнішній шлях до файлу (наприклад, /index.html або /css/style.css)
      * @param s3Key - ключ файлу в S3 (наприклад, users/123/projects/abc/objects/file.html)
      */
-    async addFile(projectId: string, filePath: string, s3Key: string) {
+    async addFile(projectId: string, filePath: string, fileName: string, s3Key: string) {
         const bucket = this.config.get<string>('s3.bucket');
         const middlewareName = `${projectId}-${this.sanitize(filePath)}`;
 
         // Middleware: ReplacePathRegex мапить зовнішній шлях на внутрішній S3 шлях
         // Наприклад: /index.html -> /main-bucket/users/.../file.html
+        const externalPath = this.formateExternalPath(filePath, fileName)
         await this.etcd.put(
             `traefik/http/middlewares/${middlewareName}/replacePathRegex/regex`
-        ).value(`^${filePath}$`);
+        ).value(`^${externalPath}$`); // Сделать путь и имяфайла сделать на других языках в биты.
 
         await this.etcd.put(
             `traefik/http/middlewares/${middlewareName}/replacePathRegex/replacement`
@@ -97,6 +98,28 @@ export class TraefikService {
                 await this.etcd.delete().key(key);
             }
         }
+    }
+
+    private formateExternalPath(dir: string, file: string) {
+        dir = (dir || "").trim();
+        file = (file || "").trim();
+
+        // Убираем лишние слэши
+        dir = dir.replace(/\/+$/, "");
+        file = file.replace(/^\/+/, "");
+
+        // Собираем путь
+        const path = dir
+            ? `${dir}/${file}`
+            : `/${file}`;
+
+        // Кодируем каждую часть пути как браузер
+        return path
+            .split("/")
+            .map((part, index) =>
+                index === 0 ? "" : encodeURIComponent(part)
+            )
+            .join("/");
     }
 
     /**
