@@ -7,6 +7,7 @@ import { SessionsModule } from './sessions/sessions.module';
 import { ProjectsModule } from './projects/projects.module';
 import { FilesModule } from './files/files.module';
 import { StorageModule } from './storage/storage.module';
+import { ServeModule } from './serve/serve.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import appConfig from './configs/app.config';
 import s3Config from './configs/s3.config';
@@ -27,6 +28,7 @@ import etcdConfig from './configs/etcd.config';
     ProjectsModule,
     FilesModule,
     StorageModule,
+    ServeModule,
     ScheduleModule.forRoot()
   ],
   controllers: [],

@@ -23,6 +23,8 @@ services:
     build:
       context: ./
     container_name: app
+    env_file:
+     - .env.production.local
     restart: always
     ports:
       - "3000:3000"
@@ -43,6 +45,12 @@ services:
      - MINIO_SITE_REGION=${AWS_REGION}
     volumes:
      - minio_data:/data
+    labels:
+      - traefik.enable=true
+      # MinIO S3 API (порт 9000)
+      - "traefik.http.routers.minio-api.rule=Host(`minio.${DOMAIN_NAME}`)"
+      - traefik.http.routers.minio-api.entrypoints=web
+      - traefik.http.services.minio-api.loadbalancer.server.port=9000
 
   createbuckets:
     image: minio/mc:latest
@@ -94,10 +102,9 @@ services:
       - traefik.http.routers.traefik.rule=Host(`${TRAEFIC_PANEL_DOMAIN}`)
       - traefik.http.routers.traefik.service=api@internal
       - traefik.http.routers.traefik.entrypoints=web
-      # app proxy 
+      # app proxy (API + serve files)
       - "traefik.http.routers.api.rule=Host(`${DOMAIN_NAME}`) && PathPrefix(`/api`)"
-      - "traefik.http.routers.api.entrypoints=websecure"
-      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.routers.api.entrypoints=web"
       - "traefik.http.services.api.loadbalancer.server.port=3000"
     ports:
       - "80:80"

@@ -126,7 +126,6 @@ export class ProjectsService {
         if (file.ownerId != userId || file.projectId != projectId) throw new NotFoundException('File not found');
         const checkedFile = await this.filesService.checkFile(file)
         if (checkedFile.status != FileStatus.UPLOADED) throw new ForbiddenException();
-        await this.traefik.addFile(projectId, file.path, file.name ,file.key)
         return checkedFile
     }
 }

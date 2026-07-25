@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { CurrentUserRequest } from 'src/common/requests/current-user-request.interface';
 
-@Controller('auth')
+@Controller('api/auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 

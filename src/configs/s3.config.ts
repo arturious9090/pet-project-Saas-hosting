@@ -5,5 +5,6 @@ export default registerAs('s3', () => ({
     keyId: process.env.AWS_ACCESS_KEY_ID,
     region: process.env.AWS_REGION,
     endpoint: process.env.AWS_ENDPOIN,
+    publicEndpoint: process.env.AWS_ENDPOINT_PUBLIC,
     bucket: process.env.AWS_BUCKET
 }))

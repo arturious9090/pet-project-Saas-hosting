@@ -6,7 +6,7 @@ import { CurrentUserRequest } from 'src/common/requests/current-user-request.int
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { InitFileUploadDto } from './dto/init-file-upload.dto';
 @UseGuards(SessionGuard)
-@Controller('projects')
+@Controller('api/projects')
 export class ProjectsController {
     constructor(private readonly projectsService: ProjectsService) { }
 

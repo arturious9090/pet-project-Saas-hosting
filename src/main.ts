@@ -10,7 +10,8 @@ async function bootstrap() {
     { logger: ['log', 'error', 'warn', 'debug', 'verbose'], }
   );
 
-  app.setGlobalPrefix('api');
+  // Global prefix removed — controllers define their own /api prefix
+  // ServeController must NOT have /api prefix (serves project sites at root)
 
   app.useGlobalPipes(
     new ValidationPipe({

@@ -10,4 +10,4 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
-CMD ["node", "--env-file",".env.production.local" ,"dist/main"]
+CMD ["node", "dist/main"]
