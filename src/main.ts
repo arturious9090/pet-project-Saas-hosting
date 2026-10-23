@@ -3,12 +3,12 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
+import { setupSwagger } from './swagger/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(
-    AppModule,
-    { logger: ['log', 'error', 'warn', 'debug', 'verbose'], }
-  );
+  const app = await NestFactory.create(AppModule, {
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+  });
 
   // Global prefix removed — controllers define their own /api prefix
   // ServeController must NOT have /api prefix (serves project sites at root)
@@ -21,7 +21,9 @@ async function bootstrap() {
     }),
   );
 
-  app.use(cookieParser())
+  app.use(cookieParser());
+
+  setupSwagger(app);
 
   const config = app.get(ConfigService);
 

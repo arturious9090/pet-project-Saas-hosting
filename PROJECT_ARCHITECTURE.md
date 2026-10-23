@@ -367,6 +367,11 @@ POST /api/projects/:projectId/files/:fileId/complete
 
 ## 5. API Эндпоинты
 
+Интерактивная документация: `/api/docs`; спецификации: `/api/docs-json` и `/api/docs-yaml`.
+Схемы генерируются из декораторов в контроллерах и DTO. Подключение находится в
+`src/swagger/swagger.ts`, проверка покрытия и доступности — в `src/swagger/swagger.spec.ts`.
+Текущие особенности `sign-out` и ответа `profile` описаны в Swagger и разделе API README.
+
 ### 5.1 Аутентификация (`/api/auth`)
 
 | Метод | Путь | Защита | Описание |
